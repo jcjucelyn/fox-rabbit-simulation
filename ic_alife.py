@@ -92,6 +92,7 @@ class Field:
         self.rabbits = []
         self.nrabbits = []
         # self.nfoxes = []
+        self.nfoxes = []
         self.ngrass = []
         self.size = size
         self.field = np.ones(shape=(self.size, self.size), dtype=int)
@@ -130,7 +131,8 @@ class Field:
         self.rabbits += born
 
         # Capture field state for historical tracking
-        self.nrabbits.append(self.num_rabbits())
+        self.nrabbits.append(len(self.num_animals()[2]))
+        self.nfoxes.append(len(self.num_animals()[3]))
         self.ngrass.append(self.amount_of_grass())
 
     def grow(self):
@@ -144,16 +146,19 @@ class Field:
             rabbits[r.x, r.y] = r.id
         return rabbits
 
-    def num_rabbits(self):
+    def num_animals(self):
         """ How many rabbits are there in the field ? """
         num_dict = {}
 
         # add empty lists to the dict for each id present
-        # for r in self.rabbits:
-        #     num_dict[r.id] = []
+        for r in self.rabbits:
+            num_dict[r.id] = []
 
+        for r in self.rabbits:
+            num_dict[r.id] += [r]
 
-        return len([r for r in self.rabbits if r.id == 2])
+        return num_dict
+        # return len([r for r in self.rabbits if r.id == 2])
 
     def amount_of_grass(self):
         return self.field.sum()
@@ -178,6 +183,12 @@ class Field:
             xs = [x / maxrabbit for x in xs]
             plt.xlabel("% Rabbits")
 
+        xf = self.nfoxes[:]
+        if showPercentage:
+            maxfox = max(xf)
+            xf = [x / maxfox for x in xf]
+            plt.xlabel("% Foxes")
+
         ys = self.ngrass[:]
         if showPercentage:
             maxgrass = max(ys)
@@ -186,6 +197,7 @@ class Field:
 
         if showTrack:
             plt.plot(xs, ys, marker=marker)
+            plt.plot(xf, ys, marker=marker)
         else:
             plt.scatter(xs, ys, marker=marker)
 
@@ -277,7 +289,7 @@ def main():
     # for _ in range(init_fox):
     #     field.add_rabbit(Rabbit(3, 1, 1, fox_k, (2,), fsize))
 
-    for _ in range(1):
+    for _ in range(10):
         field.add_rabbit(Rabbit(2, 1, 1, 1, (1,), fsize))
 
     # add fox
