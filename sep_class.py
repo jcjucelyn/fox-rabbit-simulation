@@ -8,9 +8,16 @@ import seaborn as sns
 """ TRYING TO CREATE SEPARATE FOX AND BUNNY CLASSES """
 
 SIZE = 500  # The dimensions of the field
-OFFSPRING = 2 # Max offspring when a rabbit reproduces
+R_OFFSPRING = 2 # Max offspring when a rabbit reproduces
+F_OFFSPRING = 2 # Max offspring when a fox reproduces
 GRASS_RATE = 0.025 # Probability that grass grows back at any location in the next season.
 WRAP = False # Does the field wrap around on itself when rabbits move?
+
+EMPTY = 0
+GRASS_CELL = 1
+RABBIT_CELL = 2
+FOX_CELL = 3
+
 
 # only take in one class, "animal"
 # make parameters-- max offspring, speed, starve, eats(what # they can eat, like rabbits are 1)
@@ -30,7 +37,9 @@ class Rabbit:
         """ Make a new rabbit at the same location.
          rabbit's eaten level is reset to zero. """
         self.eaten = 0
-        return copy.deepcopy(self)
+        offspring = rnd.randint(0, R_OFFSPRING)
+        for _ in range(offspring):
+            return copy.deepcopy(self)
 
     def eat(self, amount):
         """ Feed the rabbit some grass """
@@ -49,57 +58,53 @@ class Rabbit:
 class Fox:
     """ A furry creature roaming a field in search of grass to eat.
     Mr. Rabbit must eat enough to reproduce, otherwise he will starve. """
-
-    # def __init__(self, id, max_offspring, speed, starve, eats):
-    #     self.x = rnd.randrange(0, SIZE)
-    #     self.y = rnd.randrange(0, SIZE)
-    #     self.eaten = 0
-    #     self.id = id
-    #     self.max_offspring = max_offspring
-    #     self.speed = speed
-    #     self.starve = starve
-    #     self.eats = eats
-    #     self.cycle = 0
-
-    def __int__(self, cycle=0, starve=3):
+    def __init__(self):
         """
         x: describing where fox can move
         y: describing where fox can move
-        eaten: number of rabbits fox has eaten
-        hunger: number to keep track of fox's hunger level
+        eaten: number of rabbits fox has eaten\
         cycle: keep track of number of cycles fox gone since it ate
         starve: specify max number of cycles fox can go without eating
         """
         self.x = rnd.randrange(0, SIZE)
         self.y = rnd.randrange(0, SIZE)
         self.eaten = 0
-        self.hunger = 0
-        self.cycle = cycle
-        self.starve = starve
+        self.cycle = 0
+        self.starve = 3
+
 
     def reproduce(self):
         """ Make a new Fox at the same location.
          fox's eaten level is reset to zero. """
         self.eaten = 0
-        #offspring = rnd.randint(0, self.max_offspring)
-        #for _ in range(offspring):
-        return copy.deepcopy(self)
+        offspring = rnd.randint(0, F_OFFSPRING)
+        for _ in range(offspring):
+            return copy.deepcopy(self)
 
     def eat(self, amount):
         """ Fox eats rabbit"""
         self.eaten += amount
 
+    # def move(self):
+    #     """ Move up, down, left, right randomly """
+    #     max_move = self.speed + 1
+    #     move_list = [i for i in range(max_move)]
+    #
+    #     if WRAP:
+    #         self.x = (self.x + rnd.choice(move_list)) % SIZE
+    #         self.y = (self.y + rnd.choice(move_list)) % SIZE
+    #     else:
+    #         self.x = min(SIZE-1, max(0, (self.x + rnd.choice(move_list))))
+    #         self.y = min(SIZE-1, max(0, (self.y + rnd.choice(move_list))))
     def move(self):
         """ Move up, down, left, right randomly """
-        max_move = self.speed + 1
-        move_list = [i for i in range(max_move)]
 
         if WRAP:
-            self.x = (self.x + rnd.choice(move_list)) % SIZE
-            self.y = (self.y + rnd.choice(move_list)) % SIZE
+            self.x = (self.x + rnd.choice([-1, 0, 1])) % SIZE
+            self.y = (self.y + rnd.choice([-1, 0, 1])) % SIZE
         else:
-            self.x = min(SIZE-1, max(0, (self.x + rnd.choice(move_list))))
-            self.y = min(SIZE-1, max(0, (self.y + rnd.choice(move_list))))
+            self.x = min(SIZE-1, max(0, (self.x + rnd.choice([-1, 0, 1]))))
+            self.y = min(SIZE-1, max(0, (self.y + rnd.choice([-1, 0, 1]))))
 
     def survive(self):
         """Checks if fox has survived"""
@@ -220,22 +225,25 @@ class Field:
 
         # rabbits reproduce
         born_rabbits = []
+        rabbit_reproduce_threshold = 10
         for rabbit in self.rabbits:
             if rabbit.eaten >= rabbit_reproduce_threshold:
-            for _ in range(rnd.randint(1, rabbit.max_offspring)):
-                born_rabbits.append(rabbit.reproduce())
+                for _ in range(rnd.randint(1, R_OFFSPRING)):
+                    born_rabbits.append(rabbit.reproduce())
         self.rabbits += born_rabbits
 
         # Foxes reproduce
         born_foxes = []
+        fox_reproduce_threshold = 10
         for fox in self.foxes:
             if fox.eaten >= fox_reproduce_threshold:
-                for _ in range(rnd.randint(1, fox.max_offspring)):
+                for _ in range(rnd.randint(1, F_OFFSPRING)):
                     born_foxes.append(fox.reproduce())
         self.foxes += born_foxes
 
         # Capture field state for historical tracking
         self.nfoxes.append(self.num_foxes())
+        self.nrabbits.append(self.num_rabbits())
         self.ngrass.append(self.num_grass())
 
     def grow(self):
@@ -273,65 +281,91 @@ class Field:
         """ Run one generation"""
         self.move()
         self.foxEatRabbit()
-        self.rabbitEatFox()
+        self.rabbitEatGrass()
         self.survive()
         self.reproduce()
         self.grow()
 
-    def history(self, showTrack=True, showPercentage=True, marker='.'):
-
-
-        plt.figure(figsize=(6,6))
-        plt.xlabel("# Rabbits")
-        plt.ylabel("# Grass")
-
-        xs = self.nrabbits[:]
-        if showPercentage:
-            maxrabbit = max(xs)
-            xs = [x/maxrabbit for x in xs]
-            plt.xlabel("% Rabbits")
-
-        ys = self.ngrass[:]
-        if showPercentage:
-            maxgrass = max(ys)
-            ys = [y/maxgrass for y in ys]
-            plt.ylabel("% Rabbits")
-
-        if showTrack:
-            plt.plot(xs, ys, marker=marker)
-        else:
-            plt.scatter(xs, ys, marker=marker)
-
-        plt.grid()
-
-        plt.title("Rabbits vs. Grass: GROW_RATE =" + str(GRASS_RATE))
-        plt.savefig("history.png", bbox_inches='tight')
-        plt.show()
-
-    def history2(self):
-        xs = self.nanimals[:]
-        ys = self.ngrass[:]
-
-        sns.set_style('dark')
-        f, ax = plt.subplots(figsize=(7, 6))
-
-        sns.scatterplot(x=xs, y=ys, s=5, color=".15")
-        sns.histplot(x=xs, y=ys, bins=50, pthresh=.1, cmap="mako")
-        sns.kdeplot(x=xs, y=ys, levels=5, color="r", linewidths=1)
-        plt.grid()
-        plt.xlim(0, max(xs)*1.2)
-
-        plt.xlabel("# Rabbits")
-        plt.ylabel("# Grass")
-        plt.title("Rabbits vs. Grass: GROW_RATE =" + str(GRASS_RATE))
-        plt.savefig("history2.png", bbox_inches='tight')
-        plt.show()
+    # def history(self, showTrack=True, showPercentage=True, marker='.'):
+    #
+    #     plt.figure(figsize=(6,6))
+    #     plt.xlabel("# Rabbits")
+    #     plt.ylabel("# Grass")
+    #
+    #     xs = self.nrabbits[:]
+    #     if showPercentage:
+    #         maxrabbit = max(xs)
+    #         xs = [x/maxrabbit for x in xs]
+    #         plt.xlabel("% Rabbits")
+    #
+    #     ys = self.ngrass[:]
+    #     if showPercentage:
+    #         maxgrass = max(ys)
+    #         ys = [y/maxgrass for y in ys]
+    #         plt.ylabel("% Grass")
+    #
+    #     zs = self.nfoxes[:]
+    #     if showPercentage:
+    #         maxfox = max(zs)
+    #         zs = [z/maxfox for z in zs]
+    #         plt.ylabel("% Foxes")
+    #
+    #     if showTrack:
+    #         plt.plot(xs, ys, marker=marker, label="Rabbits")
+    #         plt.plot(zs, ys, marker=marker, label="Foxes")
+    #     else:
+    #         plt.scatter(xs, ys, marker=marker, label="Rabbits")
+    #         plt.scatter(zs, ys, marker=marker, label="Foxes")
+    #
+    #     plt.grid()
+    #
+    #     plt.title("Rabbits vs. Grass vs. Foxes: GROW_RATE =" + str(GRASS_RATE))
+    #     plt.legend(loc="upper left")
+    #     plt.savefig("history.png", bbox_inches='tight')
+    #     plt.show()
+    #
+    # def history2(self):
+    #     xs = self.nanimals[:]
+    #     ys = self.ngrass[:]
+    #     zs = self.nfoxes[:]
+    #
+    #     sns.set_style('dark')
+    #     f, ax = plt.subplots(figsize=(7, 6))
+    #
+    #     sns.scatterplot(x=xs, y=ys, hue=zs, s=5, palette='viridis')
+    #     sns.histplot(x=xs, y=ys, bins=50, pthresh=.1, cmap="mako")
+    #     sns.kdeplot(x=xs, y=ys, levels=5, color="r", linewidths=1)
+    #     plt.grid()
+    #     plt.xlim(0, max(xs)*1.2)
+    #
+    #     plt.xlabel("# Rabbits")
+    #     plt.ylabel("# Grass")
+    #     plt.title("Rabbits and Foxes vs. Grass: GROW_RATE =" + str(GRASS_RATE))
+    #     plt.legend(title="Number Foxes")
+    #     plt.savefig("history2.png", bbox_inches='tight')
+    #     plt.show()
 
 
 def animate(i, field, im):
+
+    # generate field
     field.generation()
-    # print("AFTER: ", i, np.sum(field.field), len(field.rabbits))
-    im.set_array(field.field)
+
+    # get cells that contain each
+    rabbits = field.field == RABBIT_CELL
+    foxes = field.field == FOX_CELL
+    grass = field.field == GRASS_CELL
+
+    # create new array with 3 color channels
+    new_array = np.zeros(shape=(SIZE, SIZE, 3))
+    new_array[:, :, 0] = grass #red
+    new_array[:, :, 1] = rabbits #green
+    new_array[:, :, 2] = foxes #blue
+
+    # update image with the new array
+    im.set_array(new_array)
+
+    # set title of plot to show current generation
     plt.title("generation = " + str(i))
     return im,
 
@@ -343,22 +377,20 @@ def main():
 
     for _ in range(20):
         field.add_rabbit(Rabbit())
-        field.add_animal(Fox(3, 1, 2, 10, (0,)))
-
-    # Animal(animal #, max_offspring, speed, starve, eats=(1,)
-    # add a fox
-    # for _ in range(50):
-    #     field.add_animal(Animal(3, 1, 2, 10, (1, )))
+        field.add_fox(Fox())
+        field.grow()
+        #field.add_animal(Fox(3, 1, 2, 10, (0,)))
 
 
-    array = np.ones(shape=(SIZE, SIZE), dtype=int)
+
+    array = np.ones(shape=(SIZE, SIZE, 3), dtype=int)
     fig = plt.figure(figsize=(5,5))
     im = plt.imshow(array, cmap='PiYG', interpolation='hamming', aspect='auto', vmin=0, vmax=1)
     anim = animation.FuncAnimation(fig, animate, fargs=(field, im,), frames=1000000, interval=1, repeat=True)
     plt.show()
 
-    field.history()
-    field.history2()
+    # field.history()
+    # field.history2()
 
 
 if __name__ == '__main__':
