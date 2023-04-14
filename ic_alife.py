@@ -91,6 +91,7 @@ class Field:
         and initially no rabbits """
         self.rabbits = []
         self.nrabbits = []
+        # self.nfoxes = []
         self.ngrass = []
         self.size = size
         self.field = np.ones(shape=(self.size, self.size), dtype=int)
@@ -203,7 +204,7 @@ class Field:
 
         sns.scatterplot(x=xs, y=ys, s=5, color=".15")
         sns.histplot(x=xs, y=ys, bins=50, pthresh=.1, cmap="mako")
-        sns.kdeplot(x=xs, y=ys, levels=5, color="r", linewidths=1)
+        sns.kdeplot(x=xs, y=ys, levels=5, color="r", linewidths=1, warn_singular=False)
         plt.grid()
         plt.xlim(0, max(xs) * 1.2)
 
