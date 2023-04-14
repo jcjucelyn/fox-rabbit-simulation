@@ -8,7 +8,7 @@ import seaborn as sns
 """ TRYING TO CREATE SEPARATE FOX AND BUNNY CLASSES """
 
 SIZE = 500  # The dimensions of the field
-# OFFSPRING = 2 # Max offspring offspring when a rabbit reproduces
+OFFSPRING = 2 # Max offspring when a rabbit reproduces
 GRASS_RATE = 0.025 # Probability that grass grows back at any location in the next season.
 WRAP = False # Does the field wrap around on itself when rabbits move?
 
@@ -28,7 +28,6 @@ class Rabbit:
 
     def reproduce(self):
         """ Make a new rabbit at the same location.
-         Reproduction is hard work! Each reproducing
          rabbit's eaten level is reset to zero. """
         self.eaten = 0
         return copy.deepcopy(self)
@@ -51,28 +50,43 @@ class Fox:
     """ A furry creature roaming a field in search of grass to eat.
     Mr. Rabbit must eat enough to reproduce, otherwise he will starve. """
 
-    def __init__(self, id, max_offspring, speed, starve, eats):
+    # def __init__(self, id, max_offspring, speed, starve, eats):
+    #     self.x = rnd.randrange(0, SIZE)
+    #     self.y = rnd.randrange(0, SIZE)
+    #     self.eaten = 0
+    #     self.id = id
+    #     self.max_offspring = max_offspring
+    #     self.speed = speed
+    #     self.starve = starve
+    #     self.eats = eats
+    #     self.cycle = 0
+
+    def __int__(self, cycle=0, starve=3):
+        """
+        x: describing where fox can move
+        y: describing where fox can move
+        eaten: number of rabbits fox has eaten
+        hunger: number to keep track of fox's hunger level
+        cycle: keep track of number of cycles fox gone since it ate
+        starve: specify max number of cycles fox can go without eating
+        """
         self.x = rnd.randrange(0, SIZE)
         self.y = rnd.randrange(0, SIZE)
         self.eaten = 0
-        self.id = id
-        self.max_offspring = max_offspring
-        self.speed = speed
+        self.hunger = 0
+        self.cycle = cycle
         self.starve = starve
-        self.eats = eats
-        self.cycle = 0
 
     def reproduce(self):
-        """ Make a new rabbit at the same location.
-         Reproduction is hard work! Each reproducing
-         rabbit's eaten level is reset to zero. """
+        """ Make a new Fox at the same location.
+         fox's eaten level is reset to zero. """
         self.eaten = 0
-        offspring = rnd.randint(0, self.max_offspring)
-        for _ in range(offspring):
-            return copy.deepcopy(self)
+        #offspring = rnd.randint(0, self.max_offspring)
+        #for _ in range(offspring):
+        return copy.deepcopy(self)
 
     def eat(self, amount):
-        """ Feed the rabbit some grass """
+        """ Fox eats rabbit"""
         self.eaten += amount
 
     def move(self):
@@ -88,6 +102,7 @@ class Fox:
             self.y = min(SIZE-1, max(0, (self.y + rnd.choice(move_list))))
 
     def survive(self):
+        """Checks if fox has survived"""
         if self.cycle <= self.starve:
             self.cycle += 1
             return True
@@ -145,10 +160,10 @@ class Field:
         """ Create a patch of grass with dimensions SIZE x SIZE
         and initially no rabbits """
         self.rabbits = []
-        self.animals = []
+        self.foxes = []
         self.field = np.ones(shape=(SIZE, SIZE), dtype=int)
         self.nrabbits = []
-        self.nanimals = []
+        self.nfoxes = []
         self.ngrass = []
 
 
@@ -156,71 +171,109 @@ class Field:
         """ A new rabbit is added to the field """
         self.rabbits.append(rabbit)
 
-    def add_animal(self, animal):
-        self.animals.append(animal)
+    def add_fox(self, fox):
+        """A new fox is added to the field"""
+        self.foxes.append(fox)
 
     def move(self):
         """ Animals move """
         for r in self.rabbits:
             r.move()
-        for r in self.animals:
-            r.move()
+        for f in self.foxes:
+            f.move()
 
-    def eat(self):
+    def foxEatRabbit(self):
+        """
+        Foxes eat rabbits (if they find any)
+        """
+        for fox in self.foxes:
+            possible_victims = [rabbit for rabbit in self.rabbits if rabbit.x == fox.x and rabbit.y == fox.y]
+        if len(possible_victims) > 0:
+            victim = rnd.choice(possible_victims)
+            self.rabbits.remove(victim)
+            fox.eaten += 1
+
+
+    def rabbitEatGrass(self):
         """ Rabbits eat (if they find grass where they are) """
 
         for rabbit in self.rabbits:
             if self.field[rabbit.x, rabbit.y] == 1:
                 rabbit.eat(self.field[rabbit.x,rabbit.y])
                 self.field[rabbit.x,rabbit.y] = 0
-
-
-        # check id of new spot
-        # if edible, eat. if not, don't
-        for animal in self.animals:
-            if self.field[animal.x, animal.y] in range(animal.eats):
-                animal.eat(self.field[animal.x,animal.y])
-            self.field[animal.x,animal.y] = 0
+        #
+        #
+        # # check id of new spot
+        # # if edible, eat. if not, don't
+        # for animal in self.animals:
+        #     if self.field[animal.x, animal.y] in range(animal.eats):
+        #         animal.eat(self.field[animal.x,animal.y])
+        #     self.field[animal.x,animal.y] = 0
 
     def survive(self):
         """ Rabbits who eat some grass live to eat another day """
         self.rabbits = [r for r in self.rabbits if r.eaten > 0]
-        self.animals = [r for r in self.animals if r.survive is True]
+        self.foxes = [r for r in self.foxes if r.survive is True]
 
     def reproduce(self):
-        """ Rabbits reproduce like rabbits. """
-        born = []
-        for animal in self.animals:
-            for _ in range(rnd.randint(1, animal.max_offspring)):
-                born.append(animal.reproduce())
-        self.animals += born
+        """ Rabbits and foxes reproduce if they have eaten enough. """
+
+        # rabbits reproduce
+        born_rabbits = []
+        for rabbit in self.rabbits:
+            if rabbit.eaten >= rabbit_reproduce_threshold:
+            for _ in range(rnd.randint(1, rabbit.max_offspring)):
+                born_rabbits.append(rabbit.reproduce())
+        self.rabbits += born_rabbits
+
+        # Foxes reproduce
+        born_foxes = []
+        for fox in self.foxes:
+            if fox.eaten >= fox_reproduce_threshold:
+                for _ in range(rnd.randint(1, fox.max_offspring)):
+                    born_foxes.append(fox.reproduce())
+        self.foxes += born_foxes
 
         # Capture field state for historical tracking
-        self.nanimals.append(self.num_animals())
-        self.ngrass.append(self.amount_of_grass())
+        self.nfoxes.append(self.num_foxes())
+        self.ngrass.append(self.num_grass())
 
     def grow(self):
         """ Grass grows back with some probability """
         growloc = (np.random.rand(SIZE, SIZE) < GRASS_RATE) * 1
         self.field = np.maximum(self.field, growloc)
 
-    def get_animals(self):
-        animals = np.zeros(shape=(SIZE,SIZE), dtype=int)
-        for r in self.animals:
-            animals[r.x, r.y] = 1
-        return animals
 
-    def num_animals(self):
-        """ How many rabbits are there in the field ? """
-        return len(self.animals)
+    def get_rabbits(self):
+        """creates 2D array where each element represents presence/absence of rabbit"""
+        rabbits = np.zeros(shape=(SIZE,SIZE), dtype=int)
+        for r in self.rabbits:
+            rabbits[r.x, r.y] = 1
+        return rabbits
 
-    def amount_of_grass(self):
+    def get_foxes(self):
+        foxes = np.zeros(shape=(SIZE, SIZE), dtype=int)
+        for r in self.foxes:
+            foxes[r.x, r.y] = 1
+        return foxes
+
+    def num_foxes(self):
+        """How many foxes are there in the field?"""
+        return len(self.foxes)
+
+    def num_rabbits(self):
+        """How many rabbit are there in the field?"""
+        return len(self.rabbits)
+
+    def num_grass(self):
+        """How much grass is on the field?"""
         return self.field.sum()
 
     def generation(self):
-        """ Run one generation of rabbits """
+        """ Run one generation"""
         self.move()
-        self.eat()
+        self.foxEatRabbit()
+        self.rabbitEatFox()
         self.survive()
         self.reproduce()
         self.grow()
