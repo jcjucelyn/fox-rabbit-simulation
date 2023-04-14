@@ -67,19 +67,18 @@ class Animal:
             self.y = min(self.fsize-1, max(0, (self.y + rnd.choice(move_list))))
 
     def survive(self):
-        # return whether the animal will survive that cycle
-        self.cycle += 1
 
         # if the animal ate that cycle, reset counter to 0
         if self.eaten > 0:
             self.cycle = 0
             return True
-
-        # if the animal has gone too many cycles without eating, return "False"
-        if self.cycle <= self.starve:
-            return True
         else:
-            return False
+            # if the animal has gone too many cycles without eating, return "False"
+            if self.cycle <= self.starve:
+                self.cycle += 1
+                return True
+            else:
+                return False
         
 
 
@@ -92,7 +91,6 @@ class Field:
         and initially no rabbits """
         self.animals = []
         self.nrabbits = []
-        # self.nfoxes = []
         self.nfoxes = []
         self.ngrass = []
         self.size = size
@@ -110,9 +108,6 @@ class Field:
 
     def eat(self):
         """ Animals eat (if they find grass where they are) """
-        # for rabbit in self.rabbits:
-        #     rabbit.eat(self.field[rabbit.x, rabbit.y])
-        #     self.field[rabbit.x, rabbit.y] = 0
         for animal in self.animals:
             # check pixel of field's current value
             if self.field[animal.x, animal.y] in animal.eats:
@@ -121,7 +116,6 @@ class Field:
 
     def survive(self):
         """ Rabbits who eat some grass live to eat another day """
-        # self.rabbits = [r for r in self.rabbits if r.eaten > 0]
         self.animals = [r for r in self.animals if r.survive()]
 
     def reproduce(self):
@@ -170,7 +164,6 @@ class Field:
 
         for r in self.animals:
             num_dict[r.id] += [r]
-
         return num_dict
         # return len([r for r in self.rabbits if r.id == 2])
 
@@ -191,35 +184,40 @@ class Field:
         plt.xlabel("# Rabbits")
         plt.ylabel("# Grass")
 
-        xs = self.nrabbits[:]
+        yr = self.nrabbits[:]
         if showPercentage:
-            maxrabbit = max(xs)
-            xs = [x / maxrabbit for x in xs]
-            plt.xlabel("% Rabbits")
-
-        # xf = self.nfoxes[:]
-        # if showPercentage:
-        #     maxfox = max(xf)
-        #     xf = [x / maxfox for x in xf]
-        #     plt.xlabel("% Foxes")
-
-        ys = self.ngrass[:]
-        if showPercentage:
-            maxgrass = max(ys)
-            ys = [y / maxgrass for y in ys]
+            maxrabbit = max(yr)
+            yr = [y / maxrabbit for y in yr]
             plt.ylabel("% Rabbits")
 
+        yf = self.nfoxes[:]
+        if showPercentage:
+            maxfox = max(yf)
+            yf = [y / maxfox for y in yf]
+            plt.ylabel("% Foxes")
+
+        xs = self.ngrass[:]
+        if showPercentage:
+            maxgrass = max(xs)
+            xs = [x / maxgrass for x in xs]
+            plt.xlabel("% Grass")
+
         if showTrack:
-            plt.plot(xs, ys, marker=marker)
-            #plt.plot(xf, ys, marker=marker)
+            # plt.plot(xs, ys, marker=marker)
+            # plt.plot(xf, ys, marker=marker)
+            plt.plot(xs, yr, marker=marker, label="Rabbits")
+            plt.plot(xs, yf, marker=marker, label="Foxes")
         else:
-            plt.scatter(xs, ys, marker=marker)
+            # plt.scatter(xs, ys, marker=marker)
+            plt.scatter(xs, yr, marker=marker, label="Rabbits")
+            plt.scatter(xs, yf, marker=marker, label="Foxes")
 
         plt.grid()
 
-        plt.title("Rabbits vs. Grass: GROW_RATE =" + str(GRASS_RATE))
+        plt.title("Grass vs. Animals: GROW_RATE =" + str(GRASS_RATE))
         plt.savefig("history.png", bbox_inches='tight')
         plt.show()
+
 
     def history2(self):
         xs = self.nrabbits[:]
@@ -263,8 +261,8 @@ def animate(i, field, im):
 # total = np.maximum(field, np.maximum(rabbits, foxes))
 # print(field, "\n\n", rabbits, "\n\n", foxes, "\n\n", total)
 
-# clist = ['white', 'red', 'blue', 'green']
-clist = ['white', 'green', 'blue', 'red']
+clist = ['white', 'red', 'blue', 'green']
+# clist = ['red', 'purple', 'green']
 my_cmap = colors.ListedColormap(clist)
 
 # plt.imshow(total, cmap=my_cmap, interpolation='none')
@@ -305,12 +303,11 @@ def main():
     #     field.add_rabbit(Rabbit(3, 1, 1, fox_k, (2,), fsize))
 
     # add rabbit
-
-    for _ in range(1):
+    for _ in range(20):
         field.add_animal(Animal(2, 1, 1, 1, (1,), fsize))
 
     # add fox
-    for _ in range(3):
+    for _ in range(100):
         field.add_animal(Animal(3, 1, 2, 1, (2,), fsize))
 
     array = np.ones(shape=(fsize, fsize), dtype=int)
