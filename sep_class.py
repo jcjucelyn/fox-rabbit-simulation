@@ -222,8 +222,8 @@ class Field:
         born_rabbits = []
         for rabbit in self.rabbits:
             if rabbit.eaten >= rabbit_reproduce_threshold:
-            for _ in range(rnd.randint(1, rabbit.max_offspring)):
-                born_rabbits.append(rabbit.reproduce())
+                for _ in range(rnd.randint(1, rabbit.max_offspring)):
+                    born_rabbits.append(rabbit.reproduce())
         self.rabbits += born_rabbits
 
         # Foxes reproduce
@@ -343,7 +343,8 @@ def main():
 
     for _ in range(20):
         field.add_rabbit(Rabbit())
-        field.add_animal(Fox(3, 1, 2, 10, (0,)))
+        field.add_fox(Fox())
+        # field.add_fox(Fox(3, 1, 2, 10, (0,)))
 
     # Animal(animal #, max_offspring, speed, starve, eats=(1,)
     # add a fox
