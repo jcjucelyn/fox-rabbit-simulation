@@ -197,11 +197,11 @@ class Field:
             xs = [x / maxrabbit for x in xs]
             plt.xlabel("% Rabbits")
 
-        # xf = self.nfoxes[:]
-        # if showPercentage:
-        #     maxfox = max(xf)
-        #     xf = [x / maxfox for x in xf]
-        #     plt.xlabel("% Foxes")
+        xf = self.nfoxes[:]
+        if showPercentage:
+            maxfox = max(xf)
+            xf = [x / maxfox for x in xf]
+            plt.xlabel("% Foxes")
 
         ys = self.ngrass[:]
         if showPercentage:
@@ -209,44 +209,35 @@ class Field:
             ys = [y / maxgrass for y in ys]
             plt.ylabel("% Rabbits")
 
+        xli = [_ for _ in range(len(xf))]
+
         if showTrack:
-            plt.plot(xs, ys, marker=marker)
-            #plt.plot(xf, ys, marker=marker)
+            plt.plot(xli, xf, marker=marker, label='Foxes')
+            plt.plot(xli, xs, marker=marker, label='Rabbits')
+            plt.plot(xli, ys, marker=marker, label='Grass')
         else:
-            plt.scatter(xs, ys, marker=marker)
+            plt.scatter(xli, xf, marker=marker, label='Foxes')
+            plt.scatter(xli, xs, marker=marker, label='Rabbits')
+            plt.scatter(xli, ys, marker=marker, label='Grass')
 
         plt.grid()
 
-        plt.title("Rabbits vs. Grass: GROW_RATE =" + str(GRASS_RATE))
+        plt.title("Foxes vs. Rabbits vs. Grass: GROW_RATE =" + str(GRASS_RATE))
+        plt.legend()
         plt.savefig("history.png", bbox_inches='tight')
-        plt.show()
-
-    def history2(self):
-        xs = self.nrabbits[:]
-        ys = self.ngrass[:]
-
-        sns.set_style('dark')
-        f, ax = plt.subplots(figsize=(7, 6))
-
-        sns.scatterplot(x=xs, y=ys, s=5, color=".15")
-        sns.histplot(x=xs, y=ys, bins=50, pthresh=.1, cmap="mako")
-        sns.kdeplot(x=xs, y=ys, levels=5, color="r", linewidths=1, warn_singular=False)
-        plt.grid()
-        plt.xlim(0, max(xs) * 1.2)
-
-        plt.xlabel("# Rabbits")
-        plt.ylabel("# Grass")
-        plt.title("Rabbits vs. Grass: GROW_RATE =" + str(GRASS_RATE))
-        plt.savefig("history2.png", bbox_inches='tight')
         plt.show()
 
 
 def animate(i, field, im):
-    field.generation()
-    # print("AFTER: ", i, np.sum(field.field), len(field.rabbits))
-    im.set_array(field.field)
-    plt.title("generation = " + str(i))
-    return im,
+
+    while i <= 100:
+        field.generation()
+        # print("AFTER: ", i, np.sum(field.field), len(field.rabbits))
+        im.set_array(field.field)
+        plt.title("generation = " + str(i))
+        return im,
+
+
 
 
 # make a custom color map where
@@ -263,8 +254,8 @@ def animate(i, field, im):
 # total = np.maximum(field, np.maximum(rabbits, foxes))
 # print(field, "\n\n", rabbits, "\n\n", foxes, "\n\n", total)
 
-# clist = ['white', 'red', 'blue', 'green']
-clist = ['white', 'green', 'blue', 'red']
+# clist = ['blue', 'red', 'white', 'green']
+clist = ['blue', 'red', 'white', 'green']
 my_cmap = colors.ListedColormap(clist)
 
 # plt.imshow(total, cmap=my_cmap, interpolation='none')
@@ -310,51 +301,22 @@ def main():
         field.add_animal(Animal(2, 1, 1, 1, (1,), fsize))
 
     # add fox
-    for _ in range(3):
+    for _ in range(10):
         field.add_animal(Animal(3, 1, 2, 1, (2,), fsize))
 
     array = np.ones(shape=(fsize, fsize), dtype=int)
     fig = plt.figure(figsize=(5, 5))
-    im = plt.imshow(array, cmap=my_cmap, interpolation='hamming', aspect='auto', vmin=0, vmax=1)
+    im = plt.imshow(array, cmap=my_cmap, interpolation='hamming', aspect='auto', vmin=0.5, vmax=1)
     anim = animation.FuncAnimation(fig, animate, fargs=(field, im,), frames=1000000, interval=1, repeat=True)
     plt.show()
 
     field.history()
-    field.history2()
 
 
 if __name__ == '__main__':
     main()
 
 """
-def main():
-
-    # Create the ecosystem
-    field = Field()
-    for _ in range(10):
-        field.add_rabbit(Rabbit())
-
-
-    # Run the world
-    gen = 0
-
-    while gen < 500:
-        field.display(gen)
-        if gen % 100 == 0:
-            print(gen, field.num_rabbits(), field.amount_of_grass())
-        field.move()
-        field.eat()
-        field.survive()
-        field.reproduce()
-        field.grow()
-        gen += 1
-
-    plt.show()
-    field.plot()
-
-if __name__ == '__main__':
-    main()
-
 SOURCES:
 
 help with parsers- https://docs.python.org/3/library/argparse.html 
