@@ -7,14 +7,14 @@ import seaborn as sns
 import argparse as ap
 from matplotlib import colors
 
-SIZE = 500  # The dimensions of the field
-fsize = 500
-# OFFSPRING = 2  # Max offspring offspring when a rabbit reproduces
+SIZE = 50  # The dimensions of the field
+fsize = 50
+# OFFSPRING = 2  # Max offspring when a rabbit reproduces
 GRASS_RATE = 0.025  # Probability that grass grows back at any location in the next season.
 WRAP = False  # Does the field wrap around on itself when rabbits move?
 
 
-class Rabbit:
+class Animal:
     """ A furry creature roaming a field in search of grass to eat.
     Mr. Rabbit must eat enough to reproduce, otherwise he will starve. """
 
@@ -43,14 +43,14 @@ class Rabbit:
         self.eats = eats
 
     def reproduce(self):
-        """ Make a new rabbit at the same location.
+        """ Make a new animal at the same location.
          Reproduction is hard work! Each reproducing
          rabbit's eaten level is reset to zero. """
         self.eaten = 0
         return copy.deepcopy(self)
 
     def eat(self, amount):
-        """ Feed the rabbit some grass """
+        """Feed the animal"""
         self.eaten += amount
 
     def move(self):
@@ -89,7 +89,7 @@ class Field:
     def __init__(self, size):
         """ Create a patch of grass with dimensions SIZE x SIZE
         and initially no rabbits """
-        self.rabbits = []
+        self.animals = []
         self.nrabbits = []
         # self.nfoxes = []
         self.nfoxes = []
@@ -97,21 +97,21 @@ class Field:
         self.size = size
         self.field = np.ones(shape=(self.size, self.size), dtype=int)
 
-    def add_rabbit(self, rabbit):
-        """ A new rabbit is added to the field """
-        self.rabbits.append(rabbit)
+    def add_animal(self, animal):
+        """ A new animal is added to the field """
+        self.animals.append(animal)
 
     def move(self):
-        """ Rabbits move """
-        for r in self.rabbits:
+        """ Animals move """
+        for r in self.animals:
             r.move()
 
     def eat(self):
-        """ Rabbits eat (if they find grass where they are) """
+        """ Animals eat (if they find grass where they are) """
         # for rabbit in self.rabbits:
         #     rabbit.eat(self.field[rabbit.x, rabbit.y])
         #     self.field[rabbit.x, rabbit.y] = 0
-        for animal in self.rabbits:
+        for animal in self.animals:
             # check pixel of field's current value
             if self.field[animal.x, animal.y] in animal.eats:
                 animal.eat(self.field[animal.x, animal.y])
@@ -120,15 +120,15 @@ class Field:
     def survive(self):
         """ Rabbits who eat some grass live to eat another day """
         # self.rabbits = [r for r in self.rabbits if r.eaten > 0]
-        self.rabbits = [r for r in self.rabbits if r.survive()]
+        self.animals = [r for r in self.animals if r.survive()]
 
     def reproduce(self):
         """ Rabbits reproduce like rabbits. """
         born = []
-        for rabbit in self.rabbits:
-            for _ in range(rnd.randint(1, rabbit.max_offspring)):
-                born.append(rabbit.reproduce())
-        self.rabbits += born
+        for animal in self.animals:
+            for _ in range(rnd.randint(1, animal.max_offspring)):
+                born.append(animal.reproduce())
+        self.animals += born
 
         # Capture field state for historical tracking
         self.nrabbits.append(len(self.num_animals()[2]))
@@ -140,27 +140,29 @@ class Field:
         growloc = (np.random.rand(self.size, self.size) < GRASS_RATE) * 1
         self.field = np.maximum(self.field, growloc)
 
-    def get_rabbits(self):
-        rabbits = np.zeros(shape=(self.size, self.size), dtype=int)
-        for r in self.rabbits:
-            rabbits[r.x, r.y] = r.id
-        return rabbits
+    def get_animals(self):
+        """2D array where each element represents presence/absence of animal w/ ID"""
+        animals = np.zeros(shape=(self.size, self.size), dtype=int)
+        for r in self.animals:
+            animals[r.x, r.y] = r.id
+        return animals
 
     def num_animals(self):
-        """ How many rabbits are there in the field ? """
+        """ How many animals are there in the field?"""
         num_dict = {}
 
         # add empty lists to the dict for each id present
-        for r in self.rabbits:
+        for r in self.animals:
             num_dict[r.id] = []
 
-        for r in self.rabbits:
+        for r in self.animals:
             num_dict[r.id] += [r]
 
         return num_dict
         # return len([r for r in self.rabbits if r.id == 2])
 
     def amount_of_grass(self):
+        """How much grass is there?"""
         return self.field.sum()
 
     def generation(self):
@@ -172,7 +174,6 @@ class Field:
         self.grow()
 
     def history(self, showTrack=True, showPercentage=True, marker='.'):
-
         plt.figure(figsize=(6, 6))
         plt.xlabel("# Rabbits")
         plt.ylabel("# Grass")
@@ -183,11 +184,11 @@ class Field:
             xs = [x / maxrabbit for x in xs]
             plt.xlabel("% Rabbits")
 
-        xf = self.nfoxes[:]
-        if showPercentage:
-            maxfox = max(xf)
-            xf = [x / maxfox for x in xf]
-            plt.xlabel("% Foxes")
+        # xf = self.nfoxes[:]
+        # if showPercentage:
+        #     maxfox = max(xf)
+        #     xf = [x / maxfox for x in xf]
+        #     plt.xlabel("% Foxes")
 
         ys = self.ngrass[:]
         if showPercentage:
@@ -197,7 +198,7 @@ class Field:
 
         if showTrack:
             plt.plot(xs, ys, marker=marker)
-            plt.plot(xf, ys, marker=marker)
+            #plt.plot(xf, ys, marker=marker)
         else:
             plt.scatter(xs, ys, marker=marker)
 
@@ -289,12 +290,13 @@ def main():
     # for _ in range(init_fox):
     #     field.add_rabbit(Rabbit(3, 1, 1, fox_k, (2,), fsize))
 
-    for _ in range(10):
-        field.add_rabbit(Rabbit(2, 1, 1, 1, (1,), fsize))
+    # add rabbit
+    for _ in range(1):
+        field.add_animal(Animal(2, 1, 1, 1, (1,), fsize))
 
     # add fox
     for _ in range(3):
-        field.add_rabbit(Rabbit(3, 1, 2, 1, (2,), fsize))
+        field.add_animal(Animal(3, 1, 2, 1, (2,), fsize))
 
     array = np.ones(shape=(fsize, fsize), dtype=int)
     fig = plt.figure(figsize=(5, 5))
