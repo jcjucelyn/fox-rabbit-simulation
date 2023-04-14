@@ -56,7 +56,7 @@ class Rabbit:
     def move(self):
         """ Move up, down, left, right randomly """
         max_move = self.speed + 1
-        min_move = max_move * -1
+        min_move = max_move * -1 + 1
         move_list = [i for i in range(min_move, max_move)]
 
         if WRAP:
@@ -80,6 +80,7 @@ class Rabbit:
             return True
         else:
             return False
+        
 
 
 class Field:
@@ -94,6 +95,7 @@ class Field:
         self.nfoxes = []
         self.ngrass = []
         self.size = size
+        # self.field = np.full(shape=(self.size, self.size), fill_value=2, dtype=int)
         self.field = np.ones(shape=(self.size, self.size), dtype=int)
 
     def add_rabbit(self, rabbit):
@@ -130,8 +132,19 @@ class Field:
         self.rabbits += born
 
         # Capture field state for historical tracking
-        self.nrabbits.append(len(self.num_animals()[2]))
-        self.nfoxes.append(len(self.num_animals()[3]))
+        # capture the number of rabbits
+        if 2 in self.num_animals():
+            self.nrabbits.append(len(self.num_animals()[2]))
+        else:
+            self.nrabbits.append(0)
+
+        # capture the number of foxes
+        if 3 in self.num_animals():
+            self.nfoxes.append(len(self.num_animals()[3]))
+        else:
+            self.nfoxes.append(0)
+
+        # capture the grass amount
         self.ngrass.append(self.amount_of_grass())
 
     def grow(self):
@@ -248,7 +261,8 @@ def animate(i, field, im):
 # total = np.maximum(field, np.maximum(rabbits, foxes))
 # print(field, "\n\n", rabbits, "\n\n", foxes, "\n\n", total)
 
-clist = ['white', 'red', 'blue', 'green']
+# clist = ['white', 'red', 'blue', 'green']
+clist = ['white', 'green', 'blue', 'red']
 my_cmap = colors.ListedColormap(clist)
 
 # plt.imshow(total, cmap=my_cmap, interpolation='none')
@@ -288,6 +302,7 @@ def main():
     # for _ in range(init_fox):
     #     field.add_rabbit(Rabbit(3, 1, 1, fox_k, (2,), fsize))
 
+    # add rabbit
     for _ in range(10):
         field.add_rabbit(Rabbit(2, 1, 1, 1, (1,), fsize))
 
