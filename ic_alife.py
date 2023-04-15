@@ -14,8 +14,8 @@ import seaborn as sns
 import argparse as ap
 from matplotlib import colors
 
-SIZE = 50  # The dimensions of the field
-fsize = 50
+SIZE = 100  # The dimensions of the field
+fsize = 100
 OFFSPRING = 2  # Max offspring when a rabbit reproduces
 grass_rate = 0.025  # Probability that grass grows back at any location in the next season.
 # establish necessary constants
@@ -137,44 +137,42 @@ class Field:
     #             animal.eat(self.field[animal.x, animal.y])
     #             self.field[animal.x, animal.y] = 0
 
-    def eat(self):
-        """ Animals eat (if they find grass where they are) """
+    # def eat(self):
+    #     """ Animals eat (if they find grass where they are) """
+    #
+    #     for animal in self.animals:
+    #         # check pixel of field's current value
+    #         # if it's edible, eat it and revert the field value to 0
+    #         if self.field[animal.x, animal.y] in animal.eats:
+    #             animal.eat(self.field[animal.x, animal.y])
+    #             self.field[animal.x, animal.y] = 0
+    #         # if it is not, leave the field value as is
+    #         elif self.field[animal.x, animal.y] > animal.id:
+    #             self.field[animal.x, animal.y] = self.field[animal.x, animal.y]
 
-        for animal in self.animals:
-            # check pixel of field's current value
-            # if it's edible, eat it and revert the field value to 0
-            if self.field[animal.x, animal.y] in animal.eats:
-                animal.eat(self.field[animal.x, animal.y])
-                self.field[animal.x, animal.y] = 0
-            # if it is not, leave the field value as is
-            elif self.field[animal.x, animal.y] > animal.id:
-                self.field[animal.x, animal.y] = self.field[animal.x, animal.y]
+    # def eat(self):
+    #     """ Animals eat (if they find food where they are) """
+    #     for animal in self.animals:
+    #         # check pixel of field's current value
+    #         if self.field[animal.x, animal.y] == animal.eats:
+    #             if self.field[animal.x, animal.y] == 2:
+    #                 self.remove_rabbit(animal.x, animal.y)
+    #             elif self.field[animal.x, animal.y] == 3:
+    #                 self.remove_fox(animal.x, animal.y)
+    #             animal.eat(1)
+
 
     def survive(self):
         """ Animals who eat may live to eat another day, depending on their cycle survivals """
         self.animals = [r for r in self.animals if r.survive()]
 
-    def reproduce(self):
-        """ Animals reproduce according to their maximum offspring. """
-        born = []
-        for animal in self.animals:
-            for _ in range(rnd.randint(1, animal.max_offspring)):
-                born.append(animal.reproduce())
-        self.animals += born
-        """ Animals eat (if they find grass or rabbits where they are) """
-        for animal in self.animals:
-            # check pixel of field's current value
-            if self.field[animal.x, animal.y] == animal.eats:
-                if animal.eats == 1:  # rabbit eating grass
-                    animal.eat(self.field[animal.x, animal.y])
-                    self.field[animal.x, animal.y] = 0
-                elif animal.eats == 2: # fox eating rabbit
-                    for rabbit in self.animals:
-                        if rabbit.id == 2 and rabbit.x == animal.x and rabbit.y == animal.y:
-                            self.animals.remove(rabbit)
-                            self.field[animal.x, animal.y] = 3
-                        break
-                    animal.eat(2)
+    # def reproduce(self):
+    #     """ Animals reproduce according to their maximum offspring. """
+    #     born = []
+    #     for animal in self.animals:
+    #         for _ in range(rnd.randint(1, animal.max_offspring)):
+    #             born.append(animal.reproduce())
+    #     self.animals += born
 
 
     def survive(self):
@@ -308,74 +306,81 @@ class Field:
         
 
 
-class Animal:
-    """ A furry creature roaming a field in search of grass to eat.
-    Mr. Rabbit must eat enough to reproduce, otherwise he will starve. """
+# class Animal:
+#     """ A furry creature roaming a field in search of grass to eat.
+#     Mr. Rabbit must eat enough to reproduce, otherwise he will starve. """
+#
+#     def __init__(self, id, max_offspring, speed, starve, eats, fsize):
+#         """
+#         id : the id number of the animal
+#             empty ground = 0
+#             grass        = 1
+#             rabbit       = 2
+#             fox          = 3
+#         max_offspring: the maximum amount of offspring the animal can have
+#         speed: the maximum number of pixels that an animal can move in one cycle
+#         starve: the number of cycles an animal can go without eating
+#         eats: the id #s of the animal's food
+#         fsize: the size of the field
+#         """
+#         self.fsize = fsize
+#         self.x = rnd.randrange(0, self.fsize)
+#         self.y = rnd.randrange(0, self.fsize)
+#         self.eaten = 0
+#         self.id = id
+#         self.max_offspring = max_offspring
+#         self.speed = speed
+#         self.starve = starve
+#         self.cycle = 0
+#         self.eats = eats
+#
+#     def reproduce(self):
+#         """ Make a new animal at the same location.
+#          Reproduction is hard work! Each reproducing
+#          rabbit's eaten level is reset to zero. """
+#         self.eaten = 0
+#         return copy.deepcopy(self)
+#
+#     def eat(self, amount):
+#         """Feed the animal"""
+#         self.eaten += amount
+#
+#     def move(self):
+#         """ Move up, down, left, right randomly """
+#         max_move = self.speed + 1
+#         min_move = max_move * -1 + 1
+#         move_list = [i for i in range(min_move, max_move)]
+#
+#         if WRAP:
+#             self.x = (self.x + rnd.choice(move_list)) % self.fsize
+#             self.y = (self.y + rnd.choice(move_list)) % self.fsize
+#         else:
+#             self.x = min(self.fsize-1, max(0, (self.x + rnd.choice(move_list))))
+#             self.y = min(self.fsize-1, max(0, (self.y + rnd.choice(move_list))))
+#
+#     def animal_survive(self):
+#
+#         # if the animal ate that cycle, reset counter to 0
+#         if self.eaten > 0:
+#             self.cycle = 0
+#             return True
+#         else:
+#             # if the animal has gone too many cycles without eating, return "False"
+#             if self.cycle <= self.starve:
+#                 self.cycle += 1
+#                 return True
+#             else:
+#                 return False
 
-    def __init__(self, id, max_offspring, speed, starve, eats, fsize):
-        """
-        id : the id number of the animal
-            empty ground = 0
-            grass        = 1
-            rabbit       = 2
-            fox          = 3
-        max_offspring: the maximum amount of offspring the animal can have
-        speed: the maximum number of pixels that an animal can move in one cycle
-        starve: the number of cycles an animal can go without eating
-        eats: the id #s of the animal's food
-        fsize: the size of the field
-        """
-        self.fsize = fsize
-        self.x = rnd.randrange(0, self.fsize)
-        self.y = rnd.randrange(0, self.fsize)
-        self.eaten = 0
-        self.id = id
-        self.max_offspring = max_offspring
-        self.speed = speed
-        self.starve = starve
-        self.cycle = 0
-        self.eats = eats
 
-    def reproduce(self):
-        """ Make a new animal at the same location.
-         Reproduction is hard work! Each reproducing
-         rabbit's eaten level is reset to zero. """
-        self.eaten = 0
-        return copy.deepcopy(self)
+# make a custom color map where
+#       Unoccupied = white
+#       Grass      = green
+#       Rabbits    = blue
+#       Foxes      = red
 
-    def eat(self, amount):
-        """Feed the animal"""
-        self.eaten += amount
-
-    def move(self):
-        """ Move up, down, left, right randomly """
-        max_move = self.speed + 1
-        min_move = max_move * -1 + 1
-        move_list = [i for i in range(min_move, max_move)]
-
-        if WRAP:
-            self.x = (self.x + rnd.choice(move_list)) % self.fsize
-            self.y = (self.y + rnd.choice(move_list)) % self.fsize
-        else:
-            self.x = min(self.fsize-1, max(0, (self.x + rnd.choice(move_list))))
-            self.y = min(self.fsize-1, max(0, (self.y + rnd.choice(move_list))))
-
-    def animal_survive(self):
-
-        # if the animal ate that cycle, reset counter to 0
-        if self.eaten > 0:
-            self.cycle = 0
-            return True
-        else:
-            # if the animal has gone too many cycles without eating, return "False"
-            if self.cycle <= self.starve:
-                self.cycle += 1
-                return True
-            else:
-                return False
-
-
-
+clist = ['blue', 'red', 'white', 'green']
+my_cmap = colors.ListedColormap(clist)
 
 
 def animate(i, field, im):
@@ -394,18 +399,9 @@ def animate(i, field, im):
         field.generation()
         # print("AFTER: ", i, np.sum(field.field), len(field.nfoxes))
         im.set_array(field.field)
+        im.set_cmap(my_cmap)
         plt.title("generation = " + str(i))
         return im,
-
-
-# make a custom color map where
-#       Unoccupied = white
-#       Grass      = green
-#       Rabbits    = blue
-#       Foxes      = red
-
-clist = ['blue', 'red', 'white', 'green']
-my_cmap = colors.ListedColormap(clist)
 
 
 def main():
@@ -458,17 +454,7 @@ def main():
     # create the initial array of grass (value = 1)
     array = np.ones(shape=(fsize, fsize), dtype=int)
 
-    # add rabbit
-    for _ in range(10):
-        field.add_animal(Animal(2, 2, 1, 2, (1,), fsize))
-
-    # add fox
-    for _ in range(10):
-        field.add_animal(Animal(3, 1, 2, 10, (2,), fsize))
-
         #(id, max_offspring, speed, starve, eats, fsize):
-
-    array = np.zeros(shape=(fsize, fsize), dtype=int)
     
     # plot the figure
     fig = plt.figure(figsize=(5, 5))
