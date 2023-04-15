@@ -1,7 +1,7 @@
 """
 Jocelyn Ju & Ceara Zhang
-Prof. John Rachlin
-HW05 : Predator Prey
+DS3500 // Predator Prey
+HW05
 14 April 2023
 """
 
@@ -15,7 +15,7 @@ import seaborn as sns
 import argparse as ap
 from matplotlib import colors
 
-SIZE = 50  # The dimensions of the field
+# SIZE = 50  # The dimensions of the field
 fsize = 50
 OFFSPRING = 2  # Max offspring when a rabbit reproduces
 grass_rate = 0.025  # Probability that grass grows back at any location in the next season.
@@ -82,9 +82,6 @@ class Animal:
         """ Returns whether the animal will survive that cycle
         taking into account the number of cycles the animal can
         go without starving """
-        if self.id == 3:
-            print("id: ", self.id, " || starve: ", self.starve, " || cycle: ", self.cycle)
-
         # if the animal ate that cycle, reset counter to 0
         if self.eaten > 0:
             self.cycle = 0
@@ -131,56 +128,17 @@ class Field:
     def move(self):
         """ Animals move """
         for r in self.animals:
+            # set the field equal to 0 when the animal moves away
+            # because the rabbit ate the grass, and/or the fox ate the rabbit
+            self.field[r.x, r.y] = 0
             r.move()
 
     def eat(self):
         """ Animals eat (if they find grass where they are) """
-
         for animal in self.animals:
             if self.field[animal.x, animal.y] in animal.eats: # rabbit eating grass
                 animal.eat(self.field[animal.x, animal.y])
                 self.field[animal.x, animal.y] = animal.id
-
-                # NEEED TO FIGURE OUT: HOW DO WE MAKE THE FIELD =0 WHEN THE ANIMAL MOVES?
-            # elif self.field[animal.x, animal.y] < animal.id:
-            #     self.field[animal.x, animal.y] = animal.id
-
-        # for animal in self.animals:
-        #     if animal.id == 1 and self.field[animal.x, animal.y] in animal.eats:
-        #         animal.eat(self.field[animal.x, animal.y])
-        #         self.field[animal.x, animal.y] = 0
-        #     elif animal.id == 2 and self.field[animal.x, animal.y] in animal.eats:
-        #         animal.eat(1)
-        #         self.field[animal.x, animal.y] = 0
-        #     elif animal.id < self.field[animal.x, animal.y]:
-        #         self.field[animal.x, animal.y] =
-
-        # check the rabbit locations
-
-
-        # for animal in self.animals:
-        #     # check pixel of field's current value
-        #     # if it's edible, eat it and revert the field value to 0
-        #     if self.field[animal.x, animal.y] in animal.eats:
-        #         animal.eat(self.field[animal.x, animal.y])
-        #         self.field[animal.x, animal.y] = animal.id - 1
-            # if it is not, leave the field value as is
-            # elif self.field[animal.x, animal.y] > animal.id:
-            #     self.field[animal.x, animal.y] = self.field[animal.x, animal.y]
-        # """ Animals eat (if they find grass or rabbits where they are) """
-        # for animal in self.animals:
-        #     # check pixel of field's current value
-        #     if self.field[animal.x, animal.y] in animal.eats:
-        #         if 1 in animal.eats:  # rabbit eating grass
-        #             animal.eat(self.field[animal.x, animal.y])
-        #             self.field[animal.x, animal.y] = 0
-        #         elif 2 in animal.eats:  # fox eating rabbit
-        #             for rabbit in self.animals:
-        #                 if rabbit.id == 2 and rabbit.x == animal.x and rabbit.y == animal.y:
-        #                     self.animals.remove(rabbit)
-        #                     self.field[animal.x, animal.y] = 3
-        #
-        #                 animal.eat(2)
 
     def survive(self):
         """ Animals who eat may live to eat another day, depending on their cycle survivals """
@@ -327,18 +285,17 @@ def animate(i, field, im):
         foxes = field.get_animals(3)
         total = np.maximum(field.field, np.maximum(rabbits, foxes))
 
-        im = plt.imshow(total, cmap=my_cmap, interpolation='none', vmin=0, vmax=3)
+        im = plt.imshow(total, cmap=my_cmap, interpolation='none', vmin=0, vmax=4)
         plt.title("generation = " + str(i))
         return im,
 
 
 # make a custom color map where
-#       Unoccupied = white
-#       Grass      = green
-#       Rabbits    = blue
-#       Foxes      = red
+#       0 Unoccupied = white
+#       1 Grass      = green
+#       2 Rabbits    = blue
+#       3 Foxes      = red
 
-# clist = ['blue', 'red', 'white', 'green']
 clist = ['white', 'green', 'blue', 'red']
 my_cmap = colors.ListedColormap(clist)
 
