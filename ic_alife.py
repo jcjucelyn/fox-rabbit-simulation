@@ -41,7 +41,6 @@ class Animal:
         eats: the id #s of the animal's food
         fsize: the size of the field
         """
-
         self.fsize = fsize
         self.x = rnd.randrange(0, self.fsize)
         self.y = rnd.randrange(0, self.fsize)
@@ -63,6 +62,8 @@ class Animal:
     def eat(self, amount):
         """Feed the animal, taking in the amount"""
         self.eaten += amount
+        if self.id == 3:
+            print(self.id, self.eaten)
 
     def move(self):
         """ Move up, down, left, right randomly """
@@ -131,14 +132,16 @@ class Field:
     def move(self):
         """ Animals move """
         for r in self.animals:
-            # set the field equal to 0 when the animal moves away
-            # because the rabbit ate the grass, and/or the fox ate the rabbit
-            self.field[r.x, r.y] = 0
             r.move()
 
     # def eat(self):
     #     """ Animals eat (if they find grass where they are) """
     #     for animal in self.animals:
+    #         self.field[animal.x, animal.y] = animal.id
+    #
+    #         if self.field[animal.x, animal.y] in animal.eats: # rabbit eating grass
+    #             animal.eat(self.field[animal.x, animal.y])
+    #             self.field[animal.x, animal.y] = 0
     #         # check pixel of field's current value
     #         if self.field[animal.x, animal.y] == animal.eats:
     #             # animal.eat(1)
@@ -196,9 +199,6 @@ class Field:
     #                 animal.eat(self.field[animal.x][animal.y])
     #                 self.field[animal.x][animal.y] = 0
     #                 #print(f"Bunny {animal.id} is eating grass")
-
-
-
     def eat(self):
         """ Animals eat (if they find grass where they are) """
         for animal in self.animals:
@@ -233,18 +233,10 @@ class Field:
         """ Animals who eat may live to eat another day, depending on their cycle survivals """
         self.animals = [r for r in self.animals if r.survive()]
 
-    # def reproduce(self):
-    #     """ Animals reproduce according to their maximum offspring. """
-    #     born = []
-    #     for animal in self.animals:
-    #         for _ in range(rnd.randint(1, animal.max_offspring)):
-    #             born.append(animal.reproduce())
-    #     self.animals += born
-
-
     def reproduce(self):
-        """ Rabbits reproduce like rabbits. """
-        born = [animal.reproduce() for animal in self.animals for _ in range(rnd.randint(0, animal.max_offspring))]
+        """ Animals reproduce if they have eaten """
+        reproduce_anim = [animal for animal in self.animals if animal.eaten > 0]
+        born = [animal.reproduce() for animal in reproduce_anim for _ in range(rnd.randint(0, animal.max_offspring))]
         self.animals.extend(born)
 
         # Capture field state for historical tracking
@@ -270,7 +262,7 @@ class Field:
 
     def get_animals(self, id):
         """2D array where each element represents presence/absence of animal w/ ID"""
-        animals = np.ones(shape=(self.size, self.size), dtype=int)
+        animals = np.zeros(shape=(self.size, self.size), dtype=int)
         for r in self.animals:
             if r.id == id:
                 animals[r.x, r.y] = r.id
@@ -297,8 +289,8 @@ class Field:
 
     def generation(self):
         """ Run one generation of rabbits """
-        self.move()
         self.eat()
+        self.move()
         self.survive()
         self.reproduce()
         self.grow()
@@ -393,7 +385,6 @@ def animate(i, field, im):
         rabbits = field.get_animals(2)
         foxes = field.get_animals(3)
         total = np.maximum(field.field, np.maximum(rabbits, foxes))
-
         im = plt.imshow(total, cmap=my_cmap, interpolation='none', vmin=0, vmax=4)
         plt.title("generation = " + str(i))
         return im,
@@ -448,6 +439,19 @@ def main():
     # Create the ecosystem
     field = Field(fsize, grass_rate)
 
+    # # add rabbit
+    # for _ in range(5):
+    #     field.add_animal(Animal(2, 3, 1, 2, (1,), fsize))
+    #
+    # # add fox
+    # for _ in range(10):
+    #     field.add_animal(Animal(3, 1, 2, 75, (2,), fsize))
+    #
+    #     #(id, max_offspring, speed, starve, eats, fsize):
+
+    # # add foxes
+    # for _ in range(1):
+    #     fox = Animal(3, 1, 2, 15, (2, ), fsize)
     # add rabbits
     for _ in range(10):
         rabbit = Animal(2, 2, 1, 1, (1,), fsize)
@@ -463,7 +467,7 @@ def main():
     # create the initial array of grass (value = 1)
     array = np.ones(shape=(fsize, fsize), dtype=int)
 
-        #(id, max_offspring, speed, starve, eats, fsize):
+    #(id, max_offspring, speed, starve, eats, fsize):
 
     # plot the figure
     fig = plt.figure(figsize=(5, 5))
