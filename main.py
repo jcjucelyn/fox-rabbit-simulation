@@ -1,16 +1,17 @@
-# import necessary libraries
-import random as rnd
+"""
+Jocelyn Ju, Ceara Zhang
+DS 3500 / Homework 5
+Created April 10, 2023
+Updated April 15, 2023
+"""
+
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
-import copy
-import seaborn as sns
-import argparse as ap
 from matplotlib import colors
 from classAnimal import Animal
 from classField import Field
 
-# establish necessary constants
 fsize = 50
 OFFSPRING = 2  # Max offspring when a rabbit reproduces
 grass_rate = 0.025  # Probability that grass grows back at any location in the next season.
@@ -27,7 +28,7 @@ def animate(i, field, im):
         im (image) an updated image
     """
     # stopping criterion of 1000 iterations
-    while i <= 100:
+    while i <= 500:
         field.generation()
         # print("AFTER: ", i, np.sum(field.field), len(field.nfoxes))
         im.set_array(field.field)
@@ -88,21 +89,8 @@ def main():
     # Create the ecosystem
     field = Field(fsize, grass_rate)
 
-    # # add rabbit
-    # for _ in range(5):
-    #     field.add_animal(Animal(2, 3, 1, 2, (1,), fsize))
-    #
-    # # add fox
-    # for _ in range(10):
-    #     field.add_animal(Animal(3, 1, 2, 75, (2,), fsize))
-    #
-    #     #(id, max_offspring, speed, starve, eats, fsize):
-
-    # # add foxes
-    # for _ in range(1):
-    #     fox = Animal(3, 1, 2, 15, (2, ), fsize)
     # add rabbits
-    for _ in range(1):
+    for _ in range(100):
         rabbit = Animal(2, 2, 1, 1, (1,), fsize)
         field.add_animal(rabbit)
 
