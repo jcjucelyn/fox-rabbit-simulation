@@ -41,7 +41,6 @@ class Animal:
         eats: the id #s of the animal's food
         fsize: the size of the field
         """
-
         self.fsize = fsize
         self.x = rnd.randrange(0, self.fsize)
         self.y = rnd.randrange(0, self.fsize)
@@ -63,6 +62,8 @@ class Animal:
     def eat(self, amount):
         """Feed the animal, taking in the amount"""
         self.eaten += amount
+        if self.id == 3:
+            print(self.id, self.eaten)
 
     def move(self):
         """ Move up, down, left, right randomly """
@@ -122,31 +123,63 @@ class Field:
         self.grass_rate = grass_rate
 
     def add_animal(self, animal):
-        """ A new animal is added to the field """
+        """ Add a new animal to the field """
         self.animals.append(animal)
+        self.field[animal.x][animal.y] = animal.id
+        print(f"Added animal {animal.id} at ({animal.x}, {animal.y})")
+        print(self.field)
 
     def move(self):
         """ Animals move """
         for r in self.animals:
-            # set the field equal to 0 when the animal moves away
-            # because the rabbit ate the grass, and/or the fox ate the rabbit
-            self.field[r.x, r.y] = 0
             r.move()
 
+    # def eat(self):
+    #     """ Animals eat (if they find grass where they are) """
+    #     for animal in self.animals:
+    #         self.field[animal.x, animal.y] = animal.id
+    #
+    #         if self.field[animal.x, animal.y] in animal.eats: # rabbit eating grass
+    #             animal.eat(self.field[animal.x, animal.y])
+    #             self.field[animal.x, animal.y] = 0
     def eat(self):
         """ Animals eat (if they find grass where they are) """
         for animal in self.animals:
-            if self.field[animal.x, animal.y] in animal.eats: # rabbit eating grass
-                animal.eat(self.field[animal.x, animal.y])
-                self.field[animal.x, animal.y] = animal.id
+            for other in self.animals:
+                if other != animal and other.id in animal.eats and animal.x == other.x and animal.y == other.y:
+                    # animal can eat other_animal
+                    #print(f"Animal {animal.id} found food at ({animal.x}, {animal.y})")
+                    animal.eat(other.id)
+                    self.field[animal.x][animal.y] = animal.id
+                    print("fox eating rabbit")
+            # if self.field[animal.x][animal.y] in animal.eats:
+            #     if animal.id == 2:
+            #         animal.eat(self.field[animal.x][animal.y])
+            #         self.field[animal.x][animal.y] = 0
+
+            # if the thing at the current position is what the animal
+            # eats, then animal will eat the thing and the current
+            # position becomes whatever the animal is
+            if self.field[animal.x][animal.y] in animal.eats:
+                #print(f"Animal {animal.id} found food at ({animal.x}, {animal.y})")
+
+                if animal.id == 3:
+                    animal.eat(self.field[animal.x][animal.y])
+                    self.field[animal.x][animal.y] = animal.id
+                    print(f"Fox {animal.id} is eating Rabbit")
+                else:
+                    animal.eat(self.field[animal.x][animal.y])
+                    self.field[animal.x][animal.y] = 0
+                    # print(f"Bunny {animal.id} is eating grass")
 
     def survive(self):
         """ Animals who eat may live to eat another day, depending on their cycle survivals """
         self.animals = [r for r in self.animals if r.survive()]
 
     def reproduce(self):
-        """ Rabbits reproduce like rabbits. """
-        born = [animal.reproduce() for animal in self.animals for _ in range(rnd.randint(0, animal.max_offspring))]
+        """ Animals reproduce if they have eaten """
+        reproduce_anim = [animal for animal in self.animals if animal.eaten > 0]
+        born = [animal.reproduce() for animal in reproduce_anim for _ in range(rnd.randint(0, animal.max_offspring))]
         self.animals.extend(born)
 
         # Capture field state for historical tracking
@@ -172,7 +205,7 @@ class Field:
 
     def get_animals(self, id):
         """2D array where each element represents presence/absence of animal w/ ID"""
-        animals = np.ones(shape=(self.size, self.size), dtype=int)
+        animals = np.zeros(shape=(self.size, self.size), dtype=int)
         for r in self.animals:
             if r.id == id:
                 animals[r.x, r.y] = r.id
@@ -199,8 +232,8 @@ class Field:
 
     def generation(self):
         """ Run one generation of rabbits """
-        self.move()
         self.eat()
+        self.move()
         self.survive()
         self.reproduce()
         self.grow()
@@ -284,7 +317,6 @@ def animate(i, field, im):
         rabbits = field.get_animals(2)
         foxes = field.get_animals(3)
         total = np.maximum(field.field, np.maximum(rabbits, foxes))
-
         im = plt.imshow(total, cmap=my_cmap, interpolation='none', vmin=0, vmax=4)
         plt.title("generation = " + str(i))
         return im,
@@ -339,15 +371,26 @@ def main():
     # Create the ecosystem
     field = Field(fsize, grass_rate)
 
-    # add rabbit
-    for _ in range(10):
-        field.add_animal(Animal(2, 2, 1, 2, (1,), fsize))
+    # # add rabbit
+    # for _ in range(5):
+    #     field.add_animal(Animal(2, 3, 1, 2, (1,), fsize))
+    #
+    # # add fox
+    # for _ in range(10):
+    #     field.add_animal(Animal(3, 1, 2, 75, (2,), fsize))
+    #
+    #     #(id, max_offspring, speed, starve, eats, fsize):
 
-    # add fox
     for _ in range(10):
-        field.add_animal(Animal(3, 1, 2, 10, (2,), fsize))
+        rabbit = Animal(2, 2, 1, 1, (1,), fsize)
+        field.add_animal(rabbit)
+        field.field[rabbit.x][rabbit.y] = 2
 
-        #(id, max_offspring, speed, starve, eats, fsize):
+    # add foxes
+    for _ in range(1):
+        fox = Animal(3, 1, 2, 15, (2, ), fsize)
+        field.add_animal(fox)
+        field.field[fox.x][fox.y] = 3
 
     # create the initial array of grass (value = 1)
     array = np.ones(shape=(fsize, fsize), dtype=int)
