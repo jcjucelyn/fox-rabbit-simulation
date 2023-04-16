@@ -13,10 +13,9 @@ from classAnimal import Animal
 from classField import Field
 import argparse as ap
 
-fsize = 50
-OFFSPRING = 2  # Max offspring when a rabbit reproduces
-grass_rate = 0.025  # Probability that grass grows back at any location in the next season.
 WRAP = False  # Does the field wrap around on itself when rabbits move?
+
+
 def animate(i, field, im):
     """
     Animate the field of rabbits and foxes
@@ -29,11 +28,12 @@ def animate(i, field, im):
         im (image) an updated image
     """
     # stopping criterion of 1000 iterations
-    while i <= 500:
+    while i <= 1000:
         field.generation()
-        # print("AFTER: ", i, np.sum(field.field), len(field.nfoxes))
         im.set_array(field.field)
         im.set_cmap(my_cmap)
+
+        # update the image for pixel color values
         rabbits = field.get_animals(2)
         foxes = field.get_animals(3)
         total = np.maximum(field.field, np.maximum(rabbits, foxes))
@@ -50,6 +50,7 @@ def animate(i, field, im):
 
 clist = ['white', 'green', 'blue', 'red']
 my_cmap = colors.ListedColormap(clist)
+
 
 def main():
     # create a parser to support command-line arguments
@@ -78,11 +79,7 @@ def main():
     # Create the ecosystem
     field = Field(fsize, grass_rate)
 
-    # # add foxes
-    # for _ in range(20):
-    #     fox = Animal(3, 1, 2, 10, (2, ), fsize)
-    #     field.add_animal(fox)
-    # add rabbits (id, max_offspring, speed, starve, eats, fsize)
+    # add rabbits
     for _ in range(init_rabbit):
         rabbit = field.add_animal(Animal(2, 2, 1, 1, (1,), fsize))
         field.add_animal(rabbit)
@@ -93,45 +90,8 @@ def main():
         fox = field.add_animal(Animal(3, 1, 1, fox_k, (2,), fsize))
         field.add_animal(fox)
 
-    # Create the ecosystem
-    # field = Field(fsize, grass_rate)
-
-    # # add rabbit
-    # for _ in range(5):
-    #     field.add_animal(Animal(2, 3, 1, 2, (1,), fsize))
-    #
-    # # add fox
-    # for _ in range(10):
-    #     field.add_animal(Animal(3, 1, 2, 75, (2,), fsize))
-    #
-    #     #(id, max_offspring, speed, starve, eats, fsize):
-
-    # # add foxes
-    # for _ in range(1):
-    #     fox = Animal(3, 1, 2, 15, (2, ), fsize)
-    # add rabbits
-    # for _ in range(5):
-    #     rabbit = Animal(2, 2, 1, 1, (1,), fsize)
-    #     field.add_animal(rabbit)
-    #
-    # # add foxes
-    # for _ in range(20):
-    #     fox = Animal(3, 1, 2, 10, (2, ), fsize)
-    #     field.add_animal(fox)
-    # add rabbits
-    # for _ in range(100):
-    #     rabbit = Animal(2, 2, 1, 1, (1,), fsize)
-    #     field.add_animal(rabbit)
-    #
-    # # add foxes
-    # for _ in range(20):
-    #     fox = Animal(3, 1, 2, 10, (2, ), fsize)
-    #     field.add_animal(fox)
-
     # create the initial array of grass (value = 1)
     array = np.ones(shape=(fsize, fsize), dtype=int)
-
-    #(id, max_offspring, speed, starve, eats, fsize):
 
     # plot the figure
     fig = plt.figure(figsize=(5, 5))
@@ -140,6 +100,7 @@ def main():
     foxes = field.get_animals(3)
     total = np.maximum(array, np.maximum(rabbits, foxes))
     im = plt.imshow(total, cmap=my_cmap, interpolation='none', vmin=0, vmax=3)
+
     # animate the figure
     anim = animation.FuncAnimation(fig, animate, fargs=(field, im,), frames=1000000, interval=1, repeat=True)
 
