@@ -84,7 +84,7 @@ def main():
     #     field.add_animal(fox)
     # add rabbits (id, max_offspring, speed, starve, eats, fsize)
     for _ in range(init_rabbit):
-        rabbit = field.add_animal(Animal(2, 1, 1, 1, (1,), fsize))
+        rabbit = field.add_animal(Animal(2, 2, 1, 1, (1,), fsize))
         field.add_animal(rabbit)
 
     # add foxes (id, max_offspring, speed, starve, eats, fsize)
