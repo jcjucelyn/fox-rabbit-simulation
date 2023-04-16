@@ -35,7 +35,7 @@ class Field:
     def add_animal(self, animal):
         """ Add a new animal to the field """
         self.animals.append(animal)
-        self.field[animal.x][animal.y] = animal.id
+        #self.field[animal.x][animal.y] = animal.id
 
     def move(self):
         """ Animals move """
@@ -88,7 +88,7 @@ class Field:
                     # animal can eat other_animal
                     #print(f"Animal {animal.id} found food at ({animal.x}, {animal.y})")
                     animal.eat(other.id)
-                    self.field[animal.x][animal.y] = animal.id
+                    self.field[animal.x][animal.y] = 1
                     print("fox eating rabbit")
             # if self.field[animal.x][animal.y] in animal.eats:
             #     if animal.id == 2:

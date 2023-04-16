@@ -85,4 +85,5 @@ class Animal:
                 self.cycle += 1
                 return True
             else:
+                self.id = 0
                 return False

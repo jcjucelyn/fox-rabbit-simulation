@@ -102,16 +102,14 @@ def main():
     # for _ in range(1):
     #     fox = Animal(3, 1, 2, 15, (2, ), fsize)
     # add rabbits
-    for _ in range(20):
+    for _ in range(1):
         rabbit = Animal(2, 2, 1, 1, (1,), fsize)
         field.add_animal(rabbit)
-        field.field[rabbit.x][rabbit.y] = 2
 
     # add foxes
-    for _ in range(10):
+    for _ in range(20):
         fox = Animal(3, 1, 2, 10, (2, ), fsize)
         field.add_animal(fox)
-        field.field[fox.x][fox.y] = 3
 
     # create the initial array of grass (value = 1)
     array = np.ones(shape=(fsize, fsize), dtype=int)
