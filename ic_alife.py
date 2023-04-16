@@ -390,15 +390,6 @@ def animate(i, field, im):
         return im,
 
 
-# make a custom color map where
-#       0 Unoccupied = white
-#       1 Grass      = green
-#       2 Rabbits    = blue
-#       3 Foxes      = red
-
-clist = ['white', 'green', 'blue', 'red']
-my_cmap = colors.ListedColormap(clist)
-
 
 def main():
     # create a parser to support command-line arguments
