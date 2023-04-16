@@ -145,6 +145,7 @@ class Field:
         """2D array where each element represents presence/absence of animal w/ ID"""
         animals = np.zeros(shape=(self.size, self.size), dtype=int)
         for r in self.animals:
+            print(r)
             if r.id == id:
                 animals[r.x, r.y] = r.id
         return animals

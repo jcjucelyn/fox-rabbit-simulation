@@ -51,42 +51,48 @@ my_cmap = colors.ListedColormap(clist)
 
 def main():
     # create a parser to support command-line arguments
-    # parser = ap.ArgumentParser()
-    #
-    # # add grass growth rate, fox k value, field size, num initial foxes and rabbits
-    # parser.add_argument('grass_growth', type=float,
-    #                     help='the probability that grass grows back at any location in the next season')
-    # parser.add_argument('fox_k', type=int,
-    #                     help='the number of generations a fox can go without eating')
-    # parser.add_argument('field_size', type=int,
-    #                     help='the size of the field')
-    # parser.add_argument('init_fox', type=int,
-    #                     help='the starting amount of foxes')
-    # parser.add_argument('init_rabbit', type=int,
-    #                     help='the starting amount of rabbits'),
-    # args = parser.parse_args()
-    #
-    # # assign variables to the inputs
-    # grass_rate = args.grass_growth
-    # fox_k = args.fox_k
-    # fsize = args.field_size
-    # init_fox = args.init_fox
-    # init_rabbit = args.init_rabbit
-    #
-    # # Create the ecosystem
-    # field = Field(fsize, grass_rate)
-    #
-    # # add rabbits (id, max_offspring, speed, starve, eats, fsize)
-    # for _ in range(init_rabbit):
-    #     field.add_animal(Animal(2, 1, 1, 1, (1,), fsize))
-    #
-    # # add foxes (id, max_offspring, speed, starve, eats, fsize)
-    # # with user inputs for fox_k and fsize
-    # for _ in range(init_fox):
-    #     field.add_animal(Animal(3, 1, 1, fox_k, (2,), fsize))
+    parser = ap.ArgumentParser()
+
+    # add grass growth rate, fox k value, field size, num initial foxes and rabbits
+    parser.add_argument('grass_growth', type=float,
+                        help='the probability that grass grows back at any location in the next season')
+    parser.add_argument('fox_k', type=int,
+                        help='the number of generations a fox can go without eating')
+    parser.add_argument('field_size', type=int,
+                        help='the size of the field')
+    parser.add_argument('init_fox', type=int,
+                        help='the starting amount of foxes')
+    parser.add_argument('init_rabbit', type=int,
+                        help='the starting amount of rabbits'),
+    args = parser.parse_args()
+
+    # assign variables to the inputs
+    grass_rate = args.grass_growth
+    fox_k = args.fox_k
+    fsize = args.field_size
+    init_fox = args.init_fox
+    init_rabbit = args.init_rabbit
 
     # Create the ecosystem
     field = Field(fsize, grass_rate)
+
+    # add foxes
+    for _ in range(20):
+        fox = Animal(3, 1, 2, 10, (2, ), fsize)
+        field.add_animal(fox)
+    # add rabbits (id, max_offspring, speed, starve, eats, fsize)
+    for _ in range(init_rabbit):
+        rabbit = field.add_animal(Animal(2, 1, 1, 1, (1,), fsize))
+        field.add_animal(rabbit)
+
+    # add foxes (id, max_offspring, speed, starve, eats, fsize)
+    # with user inputs for fox_k and fsize
+    for _ in range(init_fox):
+        fox = field.add_animal(Animal(3, 1, 1, fox_k, (2,), fsize))
+        field.add_animal(fox)
+
+    # Create the ecosystem
+    # field = Field(fsize, grass_rate)
 
     # # add rabbit
     # for _ in range(5):
@@ -102,14 +108,14 @@ def main():
     # for _ in range(1):
     #     fox = Animal(3, 1, 2, 15, (2, ), fsize)
     # add rabbits
-    for _ in range(1):
-        rabbit = Animal(2, 2, 1, 1, (1,), fsize)
-        field.add_animal(rabbit)
-
-    # add foxes
-    for _ in range(20):
-        fox = Animal(3, 1, 2, 10, (2, ), fsize)
-        field.add_animal(fox)
+    # for _ in range(5):
+    #     rabbit = Animal(2, 2, 1, 1, (1,), fsize)
+    #     field.add_animal(rabbit)
+    #
+    # # add foxes
+    # for _ in range(20):
+    #     fox = Animal(3, 1, 2, 10, (2, ), fsize)
+    #     field.add_animal(fox)
 
     # create the initial array of grass (value = 1)
     array = np.ones(shape=(fsize, fsize), dtype=int)
@@ -118,6 +124,7 @@ def main():
 
     # plot the figure
     fig = plt.figure(figsize=(5, 5))
+
     rabbits = field.get_animals(2)
     foxes = field.get_animals(3)
     total = np.maximum(array, np.maximum(rabbits, foxes))
