@@ -1,12 +1,14 @@
-# import necessary libraries
+"""
+Jocelyn Ju, Ceara Zhang
+DS 3500 / Homework 5
+Created April 10, 2023
+Updated April 15, 2023
+"""
+
 import random as rnd
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 import numpy as np
-import copy
-import seaborn as sns
-import argparse as ap
-from matplotlib import colors
+
 class Field:
     """ A field is a patch of grass with 0 or more rabbits and foxes
      roaming around in search of food """
@@ -42,73 +44,20 @@ class Field:
         for r in self.animals:
             r.move()
 
-    # def eat(self):
-    #     """ Animals eat (if they find grass where they are) """
-    #     for animal in self.animals:
-    #         self.field[animal.x, animal.y] = animal.id
-    #
-    #         if self.field[animal.x, animal.y] in animal.eats: # rabbit eating grass
-    #             animal.eat(self.field[animal.x, animal.y])
-    #             self.field[animal.x, animal.y] = 0
-    #         # check pixel of field's current value
-    #         if self.field[animal.x, animal.y] == animal.eats:
-    #             # animal.eat(1)
-    #             animal.eat(self.field[animal.x, animal.y])
-    #             self.field[animal.x, animal.y] = 0
-
-    # def eat(self):
-    #     """ Animals eat (if they find grass where they are) """
-    #
-    #     for animal in self.animals:
-    #         # check pixel of field's current value
-    #         # if it's edible, eat it and revert the field value to 0
-    #         if self.field[animal.x, animal.y] in animal.eats:
-    #             animal.eat(self.field[animal.x, animal.y])
-    #             self.field[animal.x, animal.y] = 0
-    #         # if it is not, leave the field value as is
-    #         elif self.field[animal.x, animal.y] > animal.id:
-    #             self.field[animal.x, animal.y] = self.field[animal.x, animal.y]
-
-    # def eat(self):
-    #     """ Animals eat (if they find food where they are) """
-    #     for animal in self.animals:
-    #         # check pixel of field's current value
-    #         if self.field[animal.x, animal.y] == animal.eats:
-    #             if self.field[animal.x, animal.y] == 2:
-    #                 self.remove_rabbit(animal.x, animal.y)
-    #             elif self.field[animal.x, animal.y] == 3:
-    #                 self.remove_fox(animal.x, animal.y)
-    #             animal.eat(1)
-
     def eat(self):
         """ Animals eat (if they find grass where they are) """
         for animal in self.animals:
             for other in self.animals:
+                # if other animal is prey, eat
                 if other != animal and other.id in animal.eats and animal.x == other.x and animal.y == other.y:
-                    # animal can eat other_animal
-                    #print(f"Animal {animal.id} found food at ({animal.x}, {animal.y})")
                     animal.eat(other.id)
-                    self.field[animal.x][animal.y] = 1
-                    print("fox eating rabbit")
-            # if self.field[animal.x][animal.y] in animal.eats:
-            #     if animal.id == 2:
-            #         animal.eat(self.field[animal.x][animal.y])
-            #         self.field[animal.x][animal.y] = 0
-
+                    #self.field[animal.x][animal.y] = animal.id
             # if the thing at the current position is what the animal
             # eats, then animal will eat the thing and the current
             # position becomes whatever the animal is
             if self.field[animal.x][animal.y] in animal.eats:
-                #print(f"Animal {animal.id} found food at ({animal.x}, {animal.y})")
-                #
-                # if animal.id == 3:
-                #     animal.eat(self.field[animal.x][animal.y])
-                #     self.field[animal.x][animal.y] = animal.id
-                #     print(f"Fox {animal.id} is eating Rabbit")
-                # else:
                 animal.eat(self.field[animal.x][animal.y])
                 self.field[animal.x][animal.y] = 0
-                # print(f"Bunny {animal.id} is eating grass")
 
     def survive(self):
         """ Animals who eat may live to eat another day, depending on their cycle survivals """

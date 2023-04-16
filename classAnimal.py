@@ -1,15 +1,14 @@
-# import necessary libraries
+"""
+Jocelyn Ju, Ceara Zhang
+DS 3500 / Homework 5
+Created April 10, 2023
+Updated April 15, 2023
+"""
+
 import random as rnd
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-import numpy as np
 import copy
-import seaborn as sns
-import argparse as ap
-from matplotlib import colors
 
 
-# establish necessary constants
 fsize = 50
 OFFSPRING = 2  # Max offspring when a rabbit reproduces
 grass_rate = 0.025  # Probability that grass grows back at any location in the next season.
@@ -55,7 +54,6 @@ class Animal:
         """Feed the animal, taking in the amount"""
         self.eaten += amount
 
-
     def move(self):
         """ Move up, down, left, right randomly """
         max_move = self.speed + 1
@@ -74,12 +72,15 @@ class Animal:
         """ Returns whether the animal will survive that cycle
         taking into account the number of cycles the animal can
         go without starving """
-        # if the animal ate that cycle, reset counter to 0
+        # if the animal ate that cycle,
+        # reset counter to 0
         if self.eaten > 0:
             self.cycle = 0
             return True
 
-        # if the animal has gone too many cycles without eating, return "False"
+        # ele animal hasn't eaten, so
+        # if the animal has gone too many cycles
+        # without eating, return "False" aka died
         else:
             if self.cycle <= self.starve:
                 self.cycle += 1
