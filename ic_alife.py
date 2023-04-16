@@ -15,11 +15,11 @@ import seaborn as sns
 import argparse as ap
 from matplotlib import colors
 
-# SIZE = 50  # The dimensions of the field
+
+# establish necessary constants
 fsize = 50
 OFFSPRING = 2  # Max offspring when a rabbit reproduces
 grass_rate = 0.025  # Probability that grass grows back at any location in the next season.
-# establish necessary constants
 WRAP = False  # Does the field wrap around on itself when rabbits move?
 
 
@@ -90,7 +90,7 @@ class Animal:
 
         # if the animal has gone too many cycles without eating, return "False"
         else:
-            if self.cycle < self.starve:
+            if self.cycle <= self.starve:
                 self.cycle += 1
                 return True
             else:
@@ -142,6 +142,63 @@ class Field:
     #         if self.field[animal.x, animal.y] in animal.eats: # rabbit eating grass
     #             animal.eat(self.field[animal.x, animal.y])
     #             self.field[animal.x, animal.y] = 0
+    #         # check pixel of field's current value
+    #         if self.field[animal.x, animal.y] == animal.eats:
+    #             # animal.eat(1)
+    #             animal.eat(self.field[animal.x, animal.y])
+    #             self.field[animal.x, animal.y] = 0
+
+    # def eat(self):
+    #     """ Animals eat (if they find grass where they are) """
+    #
+    #     for animal in self.animals:
+    #         # check pixel of field's current value
+    #         # if it's edible, eat it and revert the field value to 0
+    #         if self.field[animal.x, animal.y] in animal.eats:
+    #             animal.eat(self.field[animal.x, animal.y])
+    #             self.field[animal.x, animal.y] = 0
+    #         # if it is not, leave the field value as is
+    #         elif self.field[animal.x, animal.y] > animal.id:
+    #             self.field[animal.x, animal.y] = self.field[animal.x, animal.y]
+
+    # def eat(self):
+    #     """ Animals eat (if they find food where they are) """
+    #     for animal in self.animals:
+    #         # check pixel of field's current value
+    #         if self.field[animal.x, animal.y] == animal.eats:
+    #             if self.field[animal.x, animal.y] == 2:
+    #                 self.remove_rabbit(animal.x, animal.y)
+    #             elif self.field[animal.x, animal.y] == 3:
+    #                 self.remove_fox(animal.x, animal.y)
+    #             animal.eat(1)
+
+
+    # def eat(self):
+    #     #Animals eat (if they find grass where they are)
+    #     animal_ids = [self.field[row][col] for row in range(self.size) for col in range(self.size)]
+    #     print("rabbits present:", 2 in animal_ids)
+    #     if 2 in animal_ids:
+    #         print("THERE ARE BUNNIES IN FIELD")
+    #     if 3 in animal_ids:
+    #         print('THERE ARE FOXES IN FIELD')
+    #     else:
+    #         print('NOTHING HERE')
+    #     for animal in self.animals:
+    #
+    #         # if the thing at the current position is what the animal
+    #         # eats, then animal will eat the thing and the current
+    #         # position becomes whatever the animal is
+    #         if self.field[animal.x][animal.y] in animal.eats:
+    #             print(f"Animal {animal.id} found food at ({animal.x}, {animal.y})")
+    #
+    #             if animal.id == 3:
+    #                 animal.eat(self.field[animal.x][animal.y])
+    #                 self.field[animal.x][animal.y] = animal.id
+    #                 print(f"Fox {animal.id} is eating Rabbit")
+    #             else:
+    #                 animal.eat(self.field[animal.x][animal.y])
+    #                 self.field[animal.x][animal.y] = 0
+    #                 #print(f"Bunny {animal.id} is eating grass")
     def eat(self):
         """ Animals eat (if they find grass where they are) """
         for animal in self.animals:
@@ -298,6 +355,16 @@ class Field:
         plt.show()
 
 
+# make a custom color map where
+#       Unoccupied = white
+#       Grass      = green
+#       Rabbits    = blue
+#       Foxes      = red
+
+clist = ['blue', 'red', 'white', 'green']
+my_cmap = colors.ListedColormap(clist)
+
+
 def animate(i, field, im):
     """
     Animate the field of rabbits and foxes
@@ -310,10 +377,11 @@ def animate(i, field, im):
         im (image) an updated image
     """
     # stopping criterion of 1000 iterations
-    while i <= 1000:
+    while i <= 100:
         field.generation()
         # print("AFTER: ", i, np.sum(field.field), len(field.nfoxes))
         im.set_array(field.field)
+        im.set_cmap(my_cmap)
         rabbits = field.get_animals(2)
         foxes = field.get_animals(3)
         total = np.maximum(field.field, np.maximum(rabbits, foxes))
@@ -381,6 +449,10 @@ def main():
     #
     #     #(id, max_offspring, speed, starve, eats, fsize):
 
+    # # add foxes
+    # for _ in range(1):
+    #     fox = Animal(3, 1, 2, 15, (2, ), fsize)
+    # add rabbits
     for _ in range(10):
         rabbit = Animal(2, 2, 1, 1, (1,), fsize)
         field.add_animal(rabbit)
@@ -388,12 +460,14 @@ def main():
 
     # add foxes
     for _ in range(1):
-        fox = Animal(3, 1, 2, 15, (2, ), fsize)
+        fox = Animal(3, 1, 2, 10, (2, ), fsize)
         field.add_animal(fox)
         field.field[fox.x][fox.y] = 3
 
     # create the initial array of grass (value = 1)
     array = np.ones(shape=(fsize, fsize), dtype=int)
+
+    #(id, max_offspring, speed, starve, eats, fsize):
 
     # plot the figure
     fig = plt.figure(figsize=(5, 5))
